@@ -45,7 +45,6 @@ async function handleRequest(request) {
   }
   // Convert above <script> code into worker script, donot expose the records to public
 
-  const projects = JSON.stringify(records);
   const domainList = records
     .map(
       (project) =>
