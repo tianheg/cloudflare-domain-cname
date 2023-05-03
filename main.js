@@ -1,21 +1,21 @@
-addEventListener('fetch', event => {
-  event.respondWith(handleRequest(event.request))
-})
+addEventListener('fetch', (event) => {
+  event.respondWith(handleRequest(event.request));
+});
 
 async function handleRequest(request) {
-  const end_point = `https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/?type=cname`
+  const end_point = `https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/?type=cname`;
   const response = await fetch(end_point, {
     headers: {
       'X-Auth-Email': AUTH_EMAIL,
-      'Authorization': `Bearer ${AUTH_KEY}`,
-      'Content-Type': 'application/json'
-    }
-  })
+      Authorization: `Bearer ${AUTH_KEY}`,
+      'Content-Type': 'application/json',
+    },
+  });
 
-  const results = await response.json()
-  const records = results.result.filter(record => record.name !== 'www')
+  const results = await response.json();
+  const records = results.result;
 
-  const html = records => `<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
   <html>
     <head>
       <meta charset="UTF-8" />
@@ -24,8 +24,10 @@ async function handleRequest(request) {
     </head>
     <body>
       <h1>Projects</h1>
-      <ul id="projects"></ul>
-      <script>
+      <ul id="projects">
+  `;
+  {
+    /* <script>
         window.projects = ${JSON.stringify(records)}
         const projectsContainer = document.getElementById('projects')
         window.projects.forEach(project => {
@@ -39,14 +41,28 @@ async function handleRequest(request) {
           listElem.appendChild(linkElem)
           projectsContainer.appendChild(listElem)
         })
-      </script>
-    </body>
-  </html>
-  `
+      </script> */
+  }
+  // Convert above <script> code into worker script, donot expose the records to public
 
-  return new Response(html(records), {
+  const projects = JSON.stringify(records);
+  const domainList = records
+    .map(
+      (project) =>
+        `<li><a href="https://${project.name}" target="_blank">${project.name}</a></li>`
+    )
+    .join('');
+
+  const content =
+    html +
+    domainList +
+    `</ul>
+</body>
+</html>`;
+
+  return new Response(content, {
     headers: {
       'Content-Type': 'text/html;charset=UTF-8',
     },
-  })
+  });
 }
