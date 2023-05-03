@@ -7,7 +7,7 @@ async function handleRequest(request) {
   const response = await fetch(end_point, {
     headers: {
       'X-Auth-Email': AUTH_EMAIL,
-      Authorization: `Bearer ${AUTH_KEY}`,
+      'Authorization': `Bearer ${AUTH_KEY}`,
       'Content-Type': 'application/json',
     },
   });
